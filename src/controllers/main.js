@@ -1,5 +1,6 @@
 const bcryptjs = require('bcryptjs');
 const db = require('../database/models');
+const { Op } = require('sequelize');
 
 const mainController = {
   home: (req, res) => {
@@ -38,14 +39,32 @@ const mainController = {
   bookSearch: (req, res) => {
     res.render('search', { books: [] });
   },
-  bookSearchResult: (req, res) => {
-    // Implement search by title
-    res.render('search');
+  bookSearchResult: async (req, res) => {
+    try {
+      const searchTerm = req.body.title;
+
+      if (!searchTerm) {
+        return res.status(400).json({ error: 'El campo de búsqueda está vacío.' });
+      }
+
+      const books = await db.Book.findAll({
+        where: {
+          title: { [Op.like]: `%${searchTerm}%` },
+        },
+      });
+
+      res.render('search', { books, searchTerm });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error interno del servidor');
+    }
   },
+
   deleteBook: (req, res) => {
     // Implement delete book
     res.render('home');
   },
+  /* -------------------------------------------------------------------------------- */
   authors: (req, res) => {
     db.Author.findAll()
       .then((authors) => {
@@ -62,51 +81,51 @@ const mainController = {
       const author = await db.Author.findByPk(req.params.id, {
         include: [{ model: db.Book, as: 'books' }],
       });
-    
+
       if (!author) {
         return res.status(404).send('Autor no encontrado');
       }
-    
+
       res.render('authorBooks', { author });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error interno del servidor');
     }
-        
-      }, 
-    /* ------------------------------------------------------------------------------- */
-    register: (req, res) => {
-      res.render('register');
-    },
-      processRegister: (req, res) => {
-        db.User.create({
-          Name: req.body.name,
-          Email: req.body.email,
-          Country: req.body.country,
-          Pass: bcryptjs.hashSync(req.body.password, 10),
-          CategoryId: req.body.category
-        })
-          .then(() => {
-            res.redirect('/');
-          })
-          .catch((error) => console.log(error));
-      },
-        login: (req, res) => {
-          // Implement login process
-          res.render('login');
-        },
-          processLogin: (req, res) => {
-            // Implement login process
-            res.render('home');
-          },
-            edit: (req, res) => {
-              // Implement edit book
-              res.render('editBook', { id: req.params.id })
-            },
-              processEdit: (req, res) => {
-                // Implement edit book
-                res.render('home');
-              }
-  };
 
-  module.exports = mainController;
+  },
+  /* ------------------------------------------------------------------------------- */
+  register: (req, res) => {
+    res.render('register');
+  },
+  processRegister: (req, res) => {
+    db.User.create({
+      Name: req.body.name,
+      Email: req.body.email,
+      Country: req.body.country,
+      Pass: bcryptjs.hashSync(req.body.password, 10),
+      CategoryId: req.body.category
+    })
+      .then(() => {
+        res.redirect('/');
+      })
+      .catch((error) => console.log(error));
+  },
+  login: (req, res) => {
+    // Implement login process
+    res.render('login');
+  },
+  processLogin: (req, res) => {
+    // Implement login process
+    res.render('home');
+  },
+  edit: (req, res) => {
+    // Implement edit book
+    res.render('editBook', { id: req.params.id })
+  },
+  processEdit: (req, res) => {
+    // Implement edit book
+    res.render('home');
+  }
+};
+
+module.exports = mainController;
