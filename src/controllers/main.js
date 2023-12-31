@@ -1,37 +1,42 @@
 const bcryptjs = require('bcryptjs');
 const db = require('../database/models');
 const { Op } = require('sequelize');
+const { getAllBooks, getBookById } = require('../services/books.services');
+const createError = require('http-errors');
+const { getAllAuthors, getAuthorById } = require('../services/authors.services');
 
 const mainController = {
-  home: (req, res) => {
-    db.Book.findAll({
-      include: [{ association: 'authors' }]
-    })
-      .then((books) => {
-        res.render('home', { books });
+  home: async (req, res) => {
+    try {
+      const books = await getAllBooks()
+
+      return res.render('home', { books });
+
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
       })
-      .catch((error) => console.log(error));
+    }
+
   },
   /* ------------------------------------------------------------------------------- */
   bookDetail: async (req, res) => {
     // Implement look for details in the database
 
     try {
-      const book = await db.Book.findByPk(req.params.id, {
-        include: [{ association: 'authors' }]
-      })
-
-      if (!book) {
-        return res.status(404).send('Libro no encontrado');
-      }
-
+      const book = await getBookById(req.params.id)
       return res.render('bookDetail', {
         book
       })
 
     } catch (error) {
-      console.error(error);
-      res.status(500).send('Error interno del servidor');
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
+      })
     }
   },
 
@@ -43,9 +48,7 @@ const mainController = {
     try {
       const searchTerm = req.body.title;
 
-      if (!searchTerm) {
-        return res.status(400).json({ error: 'El campo de búsqueda está vacío.' });
-      }
+      /* if (!searchTerm) throw createError(404, 'El campo de búsqueda está vacío.'); */
 
       const books = await db.Book.findAll({
         where: {
@@ -54,9 +57,13 @@ const mainController = {
       });
 
       res.render('search', { books, searchTerm });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).send('Error interno del servidor');
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
+      })
     }
   },
 
@@ -65,12 +72,20 @@ const mainController = {
     res.render('home');
   },
   /* -------------------------------------------------------------------------------- */
-  authors: (req, res) => {
-    db.Author.findAll()
-      .then((authors) => {
-        res.render('authors', { authors });
+  authors: async (req, res) => {
+    try {
+      const authors = await getAllAuthors()
+
+      return res.render('authors', { authors });
+
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
       })
-      .catch((error) => console.log(error));
+    }
+
   },
 
   /* ------------------------------------------------------------------------ */
@@ -78,18 +93,15 @@ const mainController = {
   authorBooks: async (req, res) => {
     // Implement books by author
     try {
-      const author = await db.Author.findByPk(req.params.id, {
-        include: [{ model: db.Book, as: 'books' }],
-      });
+      const author = await getAuthorById(req.params.id)
+      return res.render('authorBooks', { author });
 
-      if (!author) {
-        return res.status(404).send('Autor no encontrado');
-      }
-
-      res.render('authorBooks', { author });
     } catch (error) {
-      console.error(error);
-      res.status(500).send('Error interno del servidor');
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
+      })
     }
 
   },
