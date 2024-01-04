@@ -19,7 +19,7 @@ module.exports = (sequelize, dataTypes) => {
     }
   };
   let config = {
-    tableName: 'books',
+    tableName: 'Books',
     timestamps: false
   };
   const Book = sequelize.define(alias, cols, config);

@@ -46,16 +46,28 @@
                 <div class="col-md-9 pe-5">
   
                   <input type="password" name="password" class="form-control form-control-lg" >
+                  <small class="text-danger" id="error-pass">
+                    <%= locals.errors && errors.pass ? errors.pass.msg : null %>
+                  </small>
   
                 </div>
               </div>
   
               <hr class="mx-n3">
+              <div class="d-flex">
+                <div class="col-12 col-md-6 mt-4">
+                  <div class="form-group form-check">
+                      <input type="checkbox" class="form-check-input" id="exampleCheck1"
+                          name="remember" style="width: 30px; height:30px">
+                      <label class="form-check-label form-label ms-2"
+                          for="exampleCheck1">Recordarme</label>
+                  </div>
+                </div>
   
-              <div class="px-5 py-4">
-                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                <div class="px-5 py-4">
+                  <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                </div>
               </div>
-  
             </div>
           </form>
   

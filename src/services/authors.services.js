@@ -25,7 +25,7 @@ const getAuthorById = async (id) => {
 
         const author = await db.Author.findByPk(id, {
             include: [{ model: db.Book, as: 'books' }],
-          });
+        });
 
         if (!author) throw createError(404, 'Libro no encontrado o Id inexistente');
 

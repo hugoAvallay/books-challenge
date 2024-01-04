@@ -1,7 +1,7 @@
 const bcryptjs = require('bcryptjs');
 const db = require('../database/models');
 const { Op } = require('sequelize');
-const { getAllBooks, getBookById } = require('../services/books.services');
+const { getAllBooks, getBookById, updateBook, destroyBook } = require('../services/books.services');
 const createError = require('http-errors');
 const { getAllAuthors, getAuthorById } = require('../services/authors.services');
 
@@ -67,9 +67,22 @@ const mainController = {
     }
   },
 
-  deleteBook: (req, res) => {
+  deleteBook: async (req, res) => {
     // Implement delete book
-    res.render('home');
+
+    try {
+
+      await destroyBook(req.params.id);
+      res.redirect('/');
+    
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :(',
+      })
+    }
+
   },
   /* -------------------------------------------------------------------------------- */
   authors: async (req, res) => {
@@ -130,13 +143,50 @@ const mainController = {
     // Implement login process
     res.render('home');
   },
-  edit: (req, res) => {
+
+
+  /* -------------------------------------------------------------------------- */
+
+  edit: async (req, res) => {
     // Implement edit book
-    res.render('editBook', { id: req.params.id })
+    try {
+      const book = await db.Book.findByPk(req.params.id);
+      return res.render('editBook', { book })
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
+      })
+    }
+
+    /*  res.render('editBook', { id: req.params.id }) */
+
   },
-  processEdit: (req, res) => {
+
+
+  processEdit: async (req, res) => {
     // Implement edit book
-    res.render('home');
+
+    try {
+
+      const bookEdit = await updateBook(req.params.id, req.body)
+
+      return res.redirect(`/books/detail/${req.params.id}`);
+      /* return res.status(200).json({
+        ok: true,
+        msg: 'El libro fue actualizada con exito',
+        url: `${req.protocol}://${req.get("host")}/api/books/${bookEdit.id}`
+      }) */
+
+
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || 'Upss, hubo un error :('
+      })
+    }
   }
 };
 
