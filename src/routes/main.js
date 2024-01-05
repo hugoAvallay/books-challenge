@@ -1,5 +1,7 @@
 const express = require('express');
 const mainController = require('../controllers/main');
+const registerValidator = require('../validations/registerValidator');
+const loginValidator = require('../validations/loginValidator');
 
 const router = express.Router();
 
@@ -11,9 +13,10 @@ router.get('/authors', mainController.authors);
 router.get('/authors/:id/books', mainController.authorBooks);
 /* ----------------------------------------------------------- */
 router.get('/users/register', mainController.register);
-router.post('/users/register', mainController.processRegister);
+router.post('/users/register', registerValidator, mainController.processRegister);
 router.get('/users/login', mainController.login);
-router.post('/users/login', mainController.processLogin);
+router.post('/users/login', loginValidator, mainController.processLogin);
+router.get('/users/logout',mainController.logout)
 /* --------------------------------------------------------- */
 router.delete('/books/:id', mainController.deleteBook);
 router.get('/books/edit/:id', mainController.edit);

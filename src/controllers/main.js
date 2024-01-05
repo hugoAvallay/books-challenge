@@ -4,13 +4,15 @@ const { Op } = require('sequelize');
 const { getAllBooks, getBookById, updateBook, destroyBook } = require('../services/books.services');
 const createError = require('http-errors');
 const { getAllAuthors, getAuthorById } = require('../services/authors.services');
+const { validationResult } = require('express-validator');
 
 const mainController = {
   home: async (req, res) => {
     try {
       const books = await getAllBooks()
 
-      return res.render('home', { books });
+      return res.render('home', { books,
+        /* userLogin: req.session.userLogin  */});
 
     } catch (error) {
       return res.status(error.status || 500).json({
@@ -28,7 +30,8 @@ const mainController = {
     try {
       const book = await getBookById(req.params.id)
       return res.render('bookDetail', {
-        book
+        book,
+        userLogin: req.session.userLogin
       })
 
     } catch (error) {
@@ -74,7 +77,7 @@ const mainController = {
 
       await destroyBook(req.params.id);
       res.redirect('/');
-    
+
     } catch (error) {
       return res.status(error.status || 500).json({
         ok: false,
@@ -123,17 +126,30 @@ const mainController = {
     res.render('register');
   },
   processRegister: (req, res) => {
-    db.User.create({
-      Name: req.body.name,
-      Email: req.body.email,
-      Country: req.body.country,
-      Pass: bcryptjs.hashSync(req.body.password, 10),
-      CategoryId: req.body.category
-    })
-      .then(() => {
-        res.redirect('/');
+    /* return res.send(req.body) */
+    const errors = validationResult(req)
+
+    if (errors.isEmpty()) {
+      db.User.create({
+        Name: req.body.name,
+        Email: req.body.email,
+        Country: req.body.country,
+        Pass: bcryptjs.hashSync(req.body.password, 10),
+        CategoryId: req.body.category
       })
-      .catch((error) => console.log(error));
+        .then(() => {
+
+          return res.redirect('/');
+        })
+        .catch((error) => console.log(error));
+    } else {
+      return res.render('register', {
+        errors: errors.mapped(),
+        old: req.body
+      })
+    }
+
+
   },
   login: (req, res) => {
     // Implement login process
@@ -141,8 +157,48 @@ const mainController = {
   },
   processLogin: (req, res) => {
     // Implement login process
-    res.render('home');
+
+    const errors = validationResult(req)
+
+    if (errors.isEmpty()) {
+      const {email, remember} = req.body 
+      db.User.findOne({
+        where: {
+          email: req.body.email,
+        }
+      }).then(user => {
+        req.session.userLogin = {
+          Id: user.Id,
+          Name: user.Name,
+          Category: user.CategoryId
+        }
+        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ',req.session.userLogin);
+
+
+        remember !== undefined && res.cookie('recuperatorioComision20', req.session.userLogin, {
+          maxAge: 1 * 60 * 1000, 
+          
+        }) 
+
+        return res.redirect('/')
+      }).catch(error => console.log(error))
+
+    } else {
+      return res.render('login', {
+        errors: errors.mapped(),
+        old: req.body
+      })
+    }
   },
+
+
+  logout: (req,res) => {
+    req.session.destroy()
+    res.cookie('recuperatorioComision20', null, {
+        maxAge : -1
+    })
+    return res.redirect('/')
+},
 
 
   /* -------------------------------------------------------------------------- */
