@@ -15,7 +15,7 @@
 
           <!-- --------------------------------------------------------------------------- -->
   
-          <form action="/users/register" method="POST" class="card" style="border-radius: 15px;">
+          <form action="/users/register" method="POST" id="formRegister" class="card" style="border-radius: 15px;">
             <div class="card-body">
   
               <div class="row align-items-center pt-4 pb-3">
@@ -23,7 +23,7 @@
                   <h6 class="mb-0">Full name</h6>
                 </div>
                 <div class="col-md-9 pe-5">
-                  <input type="text" name="name" class="form-control form-control-lg  <%= locals.errors && (errors.name && 'is-invalid') %>" value="<%= locals.old && (old.name && old.name) %>"/>
+                  <input type="text" name="name" id="name" class="form-control form-control-lg  <%= locals.errors && (errors.name && 'is-invalid') %>" value="<%= locals.old && (old.name && old.name) %>"/>
                   <small id="msgError-name" class="ms-1 text-danger">
                     <%= locals.errors && (errors.name && errors.name.msg) %>
                 </small>
@@ -37,7 +37,7 @@
                   <h6 class="mb-0">Email</h6>
                 </div>
                 <div class="col-md-9 pe-5">
-                  <input type="email" name="email" class="form-control form-control-lg <%= locals.errors && (errors.email && 'is-invalid') %>" placeholder="example@gmail.com" value="<%= locals.old && (old.email && old.email) %>"/>
+                  <input type="email" class="form-control form-control-lg <%= locals.errors && (errors.email && 'is-invalid') %>" placeholder="example@gmail.com" id="email" value="<%= locals.old && (old.email && old.email) %>" name="email"/>
                   <small id="msgError-email" class="ms-1 text-danger">
                     <%= locals.errors && (errors.email && errors.email.msg) %>
                 </small>
@@ -51,8 +51,8 @@
                   <h6 class="mb-0">Country</h6>
                 </div>
                 <div class="col-md-9 pe-5">
-                  <input type="text" name="country" class="form-control form-control-lg" placeholder="Argentina" />
-                  <small id="msgError-password" class="ms-1 text-danger">
+                  <input type="text" name="country" id="country" class="form-control form-control-lg" placeholder="Argentina" />
+                  <small id="msgError-country" class="ms-1 text-danger">
                     <%= locals.errors && (errors.country && errors.country.msg) %>
                 </small>
                 </div>
@@ -63,12 +63,14 @@
                 <div class="col-md-3 ps-5">
                   <h6 class="mb-0">Password</h6>
                 </div>
-                <div class="col-md-9 pe-5">
-                  <input type="password" name="password" class="form-control form-control-lg <%= locals.errors && (errors.password && 'is-invalid') %>" >
-                  <span class="input-group-text"><i id="viewPassword" class=" fa fa-eye"></i></span>
-                  <small id="msgError-password" class="ms-1 text-danger">
-                    <%= locals.errors && (errors.password && errors.password.msg) %>
-                </small>
+                <div class=" col-md-9 pe-5">
+                  <div class="input-group">
+                    <input type="password" name="password" id="password" class="form-control form-control-lg <%= locals.errors && (errors.password && 'is-invalid') %>" >
+                    <span class="input-group-text"><i id="viewPassword" class=" fa fa-eye"></i></span>
+                    <small id="msgError-password" class="ms-1 text-danger">
+                      <%= locals.errors && (errors.password && errors.password.msg) %>
+                    </small>
+                  </div>
                 </div>
                 
               </div>
@@ -84,7 +86,7 @@
                   <label for="admin">Admin</label>
                   <input type="radio" name="category" id="user" value="2" />
                   <label for="user">User</label>
-                  <small id="msgError-password" class="text-danger ms-2">
+                  <small id="msgError-category" class="text-danger ms-2">
                     <%= locals.errors && (errors.category && errors.category.msg); %>
                 </small>
                 </div>
@@ -95,6 +97,7 @@
   
               <div class="px-5 py-4">
                 <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                <small id="msgError-empty" class="ms-2 text-danger"></small>
               </div>
   
             </div>
@@ -105,6 +108,7 @@
     </div>
   </section>
 </div>
+<script src="/javascripts/validationRegister.js"></script>
 <%- include('partials/footer.ejs') %>
 </body>
 </html>

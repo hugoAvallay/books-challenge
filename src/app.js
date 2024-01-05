@@ -1,4 +1,5 @@
 const express = require('express');
+var path = require('path');
 
 const cookieParser = require('cookie-parser');
 const methodOverride = require('method-override');
@@ -8,16 +9,19 @@ const localsCheck = require('./middlewares/localsCheck')
 const mainRouter = require('./routes/main');
 const booksApiRoutes = require('./routes/books.routes');
 const authorsApiRoutes = require('./routes/books.routes');
+const checkApiRoutes = require('./routes/checkApi.routes')
 const cookieCheck = require('./middlewares/cookieCheck');
 
 
 const app = express();
+app.set('view engine', 'ejs');
+app.set('views', 'src/views');
 
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.json());
-app.set('view engine', 'ejs');
-app.set('views', 'src/views');
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
 
 
 app.use(methodOverride('_method'));
@@ -46,6 +50,7 @@ app.use('/', mainRouter);
 
 app.use('/api/books', booksApiRoutes)
 app.use('/api/authors', authorsApiRoutes)
+app.use('/api', checkApiRoutes)
 
 
 app.listen(3000, () => {
